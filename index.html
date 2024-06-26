@@ -4,7 +4,137 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Free Professional Email Signature Generator</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333333;
+            margin-bottom: 30px;
+        }
+        .app-container {
+            display: flex;
+            gap: 40px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        .input-section, .preview-section {
+            flex: 1;
+        }
+        h2 {
+            color: #333333;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            color: #555555;
+        }
+        input[type="text"], input[type="color"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: #ffffff;
+            color: #333333;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+        .btn-secondary {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background-color: #27ae60;
+        }
+        .field-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .field-container input {
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+        .delete-field {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .delete-field:hover {
+            background-color: #c0392b;
+        }
+        #signature-preview {
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            padding: 20px;
+            margin-top: 20px;
+            background-color: #ffffff;
+        }
+        .color-picker {
+            margin-top: 20px;
+        }
+        #add-field, #copy-button {
+            width: 100%;
+            margin-top: 20px;
+        }
+        #qr-code {
+            margin-top: 20px;
+            text-align: center;
+        }
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+            .input-section, .preview-section {
+                width: 100%;
+            }
+            h1 {
+                font-size: 24px;
+            }
+            h2 {
+                font-size: 20px;
+            }
+            .btn {
+                font-size: 14px;
+            }
+        }
+    </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
@@ -28,6 +158,118 @@
             </div>
         </div>
     </div>
-    <script src="script.js"></script>
+    <script>
+        // Get DOM elements
+        const inputFields = document.getElementById('input-fields');
+        const addFieldButton = document.getElementById('add-field');
+        const preview = document.getElementById('signature-preview');
+        const copyButton = document.getElementById('copy-button');
+        const textColor = document.getElementById('text-color');
+
+        // Default fields for the signature
+        const defaultFields = [
+            { name: 'name', label: 'Name', placeholder: 'John Doe' },
+            { name: 'job-title', label: 'Job Title', placeholder: 'Software Engineer' },
+            { name: 'company', label: 'Company', placeholder: 'Tech Corp' },
+            { name: 'email', label: 'Email', placeholder: 'john@example.com' },
+            { name: 'phone', label: 'Phone', placeholder: '+1 (555) 123-4567' },
+            { name: 'website', label: 'Website', placeholder: 'https://www.example.com' }
+        ];
+
+        // Function to create input fields dynamically
+        function createField(field) {
+            const fieldContainer = document.createElement('div');
+            fieldContainer.className = 'field-container';
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.name = field.name;
+            input.placeholder = field.placeholder;
+            input.addEventListener('input', updateSignature);
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.className = 'delete-field';
+            deleteButton.onclick = () => {
+                inputFields.removeChild(fieldContainer);
+                updateSignature();
+            };
+
+            fieldContainer.appendChild(input);
+            fieldContainer.appendChild(deleteButton);
+
+            return fieldContainer;
+        }
+
+        // Function to add a new field dynamically
+        function addField() {
+            const fieldName = prompt('Enter field name:');
+            if (fieldName) {
+                const newField = {
+                    name: fieldName.toLowerCase().replace(/\s+/g, '-'),
+                    label: fieldName,
+                    placeholder: `Enter ${fieldName}`
+                };
+                inputFields.appendChild(createField(newField));
+                updateSignature();
+            }
+        }
+
+        // Function to update the signature preview based on input fields
+        function updateSignature() {
+            const fields = Array.from(inputFields.querySelectorAll('input')).map(input => ({
+                name: input.name,
+                value: input.value || input.placeholder
+            }));
+            const txtColor = textColor.value || '#000000'; // Default to black if no color is selected
+
+            const signatureHTML = `
+        <table cellpadding="0" cellspacing="0" border="0" style="font-family: Arial, sans-serif; font-size: 14px; color: ${txtColor};">
+            <tr>
+                <td style="padding-bottom: 10px; border-bottom: 1px solid ${txtColor};">
+                    <strong style="font-size: 16px;">${fields.find(f => f.name === 'name').value}</strong><br>
+                    ${fields.find(f => f.name === 'job-title').value} | ${fields.find(f => f.name === 'company').value}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding-top: 10px;">
+                    ${fields.filter(f => !['name', 'job-title', 'company'].includes(f.name)).map(field => 
+                        `${field.name === 'email' ? `<a href="mailto:${field.value}" style="color: ${txtColor}; text-decoration: none;">${field.value}</a>` :
+                          field.name === 'website' ? `<a href="${field.value}" style="color: ${txtColor}; text-decoration: none;">${field.value}</a>` :
+                          field.value}`
+                    ).join('<br>')}
+                </td>
+            </tr>
+        </table>`;
+            
+            preview.innerHTML = signatureHTML;
+        }
+
+        // Initialize default fields
+        defaultFields.forEach(field => inputFields.appendChild(createField(field)));
+
+        // Event listeners
+        addFieldButton.addEventListener('click', addField);
+        copyButton.addEventListener('click', () => {
+            const range = document.createRange();
+            range.selectNodeContents(preview);
+            
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            
+            document.execCommand('copy');
+            selection.removeAllRanges();
+            
+            alert('Signature copied to clipboard! You can now paste it directly.');
+        });
+        textColor.addEventListener('input', updateSignature);
+
+        // Set initial text color to black
+        textColor.value = '#000000';
+
+        // Initial update of the signature preview
+        updateSignature();
+    </script>
 </body>
 </html>
