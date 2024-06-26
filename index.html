@@ -1,0 +1,33 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Professional Email Signature Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Free Professional Email Signature Generator</h1>
+        <div class="app-container">
+            <div class="input-section">
+                <h2>Your Information</h2>
+                <div id="input-fields"></div>
+                <button id="add-field" class="btn btn-secondary">Add Field</button>
+                <div class="color-picker">
+                    <label for="text-color">Text Color:</label>
+                    <input type="color" id="text-color" value="#ffffff">
+                </div>
+            </div>
+            <div class="preview-section">
+                <h2>Preview</h2>
+                <div id="signature-preview"></div>
+                <div id="qr-code"></div>
+                <button id="copy-button" class="btn btn-primary">Copy Signature</button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
